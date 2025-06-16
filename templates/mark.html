@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        header ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        header ul a {
+            font-size: 18px;
+            color: #f4f4f4;
+            margin-right: 20px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        header ul a:hover {
+            color: #4CAF50;
+        }
+
+        main {
+            width: 80%;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .messages {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .error {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        section {
+            margin-top: 30px;
+        }
+
+        section h2 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        img {
+            width: 80%;
+            max-width: 500px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mark Attendance</h1>
+        <ul>
+            <a href="{{ url_for('view_attendance') }}">View Attendance</a>
+        </ul>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="messages">
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section>
+            <h2>Webcam Feed</h2>
+            <img src="{{ url_for('video_feed') }}" alt="Live Camera Feed">
+
+            <form id="attendance-form" action="{{ url_for('mark_attendance') }}" method="post">
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <button type="submit">Capture & Mark Attendance</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const form = document.getElementById('attendance-form');
+
+        form.addEventListener('submit', function (e) {
+            if (navigator.geolocation) {
+                e.preventDefault();  // Wait for location before submitting
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+
+                        // Set the hidden fields
+                        document.getElementById('latitude').value = latitude;
+                        document.getElementById('longitude').value = longitude;
+
+                        console.log("Location:", latitude, longitude); // Optional for debugging
+
+                        // Submit the form after setting location
+                        form.submit();
+                    },
+                    function (error) {
+                        alert("Location access denied. Please enable location to mark attendance.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+    </script>
+</body>
+</html>
